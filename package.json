@@ -1,0 +1,29 @@
+{
+  "name": "vicarplayserver",
+  "version": "1.0.0",
+  "description": "This is the dedicated server software for the VicarPlay service.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./dist/index.js",
+    "start:dev": "nodemon ./src/index.ts",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VicarTeam/VicarPlayServer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/VicarTeam/VicarPlayServer/issues"
+  },
+  "homepage": "https://github.com/VicarTeam/VicarPlayServer#readme",
+  "devDependencies": {
+    "@types/express": "^4.17.13",
+    "@types/node": "^18.0.1",
+    "nodemon": "^2.0.18",
+    "ts-node": "^10.8.2",
+    "typescript": "^4.7.4"
+  }
+}
