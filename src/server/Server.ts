@@ -1,5 +1,5 @@
 import * as sio from 'socket.io';
-import {Client} from "./Client";
+import Client from "./Client";
 
 export default class Server {
 
