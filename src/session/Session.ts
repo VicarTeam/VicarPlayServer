@@ -1,6 +1,7 @@
 import Client from "../server/Client";
 import {IChatMessage, MessageType} from "../@types/chat";
-import {ISessionState} from "../@types/session";
+import {IClientIdenity, ISessionState} from "../@types/session";
+import Server from "../server/Server";
 
 export default class Session {
 
@@ -23,6 +24,22 @@ export default class Session {
         return client === this.host;
     }
 
+    public sendMessage(message: IChatMessage, sender: Client = this.host) {
+        this.chatHistory.push(message);
+
+        if (message.receiver) {
+            if (message.receiver.isHost) {
+                this.host.socket.emit("chat:message", message);
+            } else {
+                this.players.find(x => x.identity.socketId === message.receiver.socketId)?.socket.emit("chat:message", message);
+            }
+
+            sender.socket.emit("chat:message", message);
+        } else {
+            Server.getInstance().server.to("session-" + this.id).emit("chat:message", message);
+        }
+    }
+
     public removePlayer(client: Client, tellChat: boolean = true, forced: boolean = false) {
         this.players.splice(this.players.indexOf(client), 1);
 
@@ -31,12 +48,17 @@ export default class Session {
         client.socket.leave("session-" + this.id);
 
         if (tellChat) {
-            this.chatHistory.push({
+            this.updatePlayers("remove", client.identity);
+            this.sendMessage({
                 type: MessageType.Status,
                 sender: client.identity,
                 content: forced ? "kicked" : "left"
             });
         }
+    }
+
+    public updatePlayers(mode: "add"|"remove", client: IClientIdenity) {
+        Server.getInstance().server.to("session-" + this.id).emit("players:update", mode, client);
     }
 
     public getStateFor(client: Client): ISessionState {

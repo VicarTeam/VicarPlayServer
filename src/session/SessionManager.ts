@@ -26,10 +26,12 @@ export default class SessionManager {
             return;
         }
 
-        session.players.push(player);
         player.session = session;
         player.socket.join("session-" + sessionId);
         player.socket.emit("session:joined", player.identity, session.getStateFor(player));
+
+        session.players.push(player);
+        session.updatePlayers("add", player.identity);
     }
 
     public destroySession(session: Session, tellMe: boolean = true) {

@@ -6,7 +6,7 @@ export default class Server {
     private static instance: Server;
     private readonly clients: Client[];
 
-    private constructor(protected readonly server: sio.Server) {
+    private constructor(public readonly server: sio.Server) {
         this.clients = [];
     }
 

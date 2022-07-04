@@ -2,6 +2,7 @@ import {Socket} from "socket.io";
 import {IClientIdenity, SessionInitMode} from "../@types/session";
 import Session from "../session/Session";
 import SessionManager from "../session/SessionManager";
+import {IChatMessage} from "../@types/chat";
 
 export default class Client {
 
@@ -50,6 +51,25 @@ export default class Client {
             } else {
                 this.session.removePlayer(this);
             }
+        });
+        this.socket.on("chat:message", (message: IChatMessage) => {
+            if (!this.session) {
+                return;
+            }
+
+            this.session.sendMessage(message, this);
+        });
+        this.socket.on("players:kick", (player: IClientIdenity) => {
+            if (!this.session || !this.session.isHost(this)) {
+                return;
+            }
+
+            const client = this.session.players.find(x => x.identity.socketId === player.socketId);
+            if (!client) {
+                return;
+            }
+
+            this.session.removePlayer(client, true, true);
         });
     }
 }
