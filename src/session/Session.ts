@@ -2,11 +2,13 @@ import Client from "../server/Client";
 import {IChatMessage, MessageType} from "../@types/chat";
 import {IClientIdenity, ISessionState} from "../@types/session";
 import Server from "../server/Server";
+import VoiceIntegration from "../voice/VoiceIntegration";
 
 export default class Session {
 
     public readonly players: Client[];
     public readonly chatHistory: IChatMessage[];
+    public voiceIntegration: VoiceIntegration|null = null;
 
     public constructor(
         public readonly id: string,

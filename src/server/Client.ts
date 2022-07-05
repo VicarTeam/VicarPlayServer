@@ -3,11 +3,16 @@ import {IClientIdenity, SessionInitMode} from "../@types/session";
 import Session from "../session/Session";
 import SessionManager from "../session/SessionManager";
 import {IChatMessage} from "../@types/chat";
+import {IVoiceIntegrationData, VoiceType} from "../@types/voice";
+import DiscordIntegration from "../voice/DiscordIntegration";
+import TeamSpeakIntegration from "../voice/TeamSpeakIntegration";
 
 export default class Client {
 
     public identity: IClientIdenity | null;
     public session: Session | null = null;
+
+    public isInVoiceMain: boolean = false;
 
     public constructor(public readonly socket: Socket) {
         this.identity = null;
@@ -97,5 +102,60 @@ export default class Client {
 
             this.session.host.socket.emit("sync-char:update", this.identity.socketId, char);
         });
+        this.socket.on("voice:start", async (data: IVoiceIntegrationData) => {
+            if (!this.session || !this.session.isHost(this)) {
+                return;
+            }
+
+            this.session.voiceIntegration = new (data.type === VoiceType.Discord ? DiscordIntegration : TeamSpeakIntegration)(data, this.session);
+
+            try {
+                await this.session.voiceIntegration.start();
+
+                const voiceStates: {[key: string]: boolean} = {};
+                for (const player of this.session.players) {
+                    voiceStates[player.identity.socketId] = await this.session.voiceIntegration.getVoiceState(player.identity);
+                }
+
+                this.socket.emit("voice:state", true);
+            } catch (e) {
+                console.error(e);
+
+                this.socket.emit("voice:state", false);
+            }
+        });
+        this.socket.on("voice:stop", async () => {
+            if (!this.session || !this.session.isHost(this)) {
+                return;
+            }
+
+            await this.session.voiceIntegration.stop();
+
+            this.socket.emit("voice:state", false);
+        });
+        this.socket.on("voice:move-player", async (targetSocketId: string, toPrivate: boolean) => {
+            if (!this.session || !this.session.isHost(this) || !this.session.voiceIntegration) {
+                return;
+            }
+
+            if (this.socket.id === targetSocketId) {
+                await this.session.voiceIntegration.move(this, toPrivate);
+            } else {
+                const client = this.session.players.find(x => x.identity.socketId === targetSocketId);
+                if (!client) {
+                    return;
+                }
+
+                await this.session.voiceIntegration.move(client, toPrivate);
+            }
+        });
+    }
+
+    public setVoiceInMain(isInVoiceMain: boolean) {
+        this.isInVoiceMain = isInVoiceMain;
+
+        if (this.session) {
+            this.session.host.socket.emit("voice:client-state", this.identity.socketId, isInVoiceMain);
+        }
     }
 }

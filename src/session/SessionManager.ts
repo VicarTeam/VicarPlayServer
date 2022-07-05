@@ -39,6 +39,10 @@ export default class SessionManager {
             session.removePlayer(player, false);
         });
 
+        if (session.voiceIntegration) {
+            session.voiceIntegration.stop().catch(() => {});
+        }
+
         this.sessions.splice(this.sessions.indexOf(session), 1);
 
         if (tellMe) {
