@@ -70,8 +70,10 @@ export default class TeamSpeakIntegration extends VoiceIntegration {
         return client.cid === this.mainChannel;
     }
 
-    private onClientMove(e: ClientMoved) {
-        const client = this.session.players.find(x => x.identity.tsName === e.client.nickname);
+    private onClientMove = (e: ClientMoved) => {
+        const client = this.session.host.identity.tsName === e.client.nickname
+            ? this.session.host
+            : this.session.players.find(x => x.identity.tsName === e.client.nickname);
         if (!client) {
             return;
         }

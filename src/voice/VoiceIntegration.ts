@@ -19,8 +19,6 @@ export default abstract class VoiceIntegration {
     public async move(client: Client, toPrivate: boolean): Promise<void> {
         try {
             await this.onMove(client.identity, toPrivate);
-
-            client.setVoiceInMain(!toPrivate);
         } catch (e) {
             console.error(e);
         }

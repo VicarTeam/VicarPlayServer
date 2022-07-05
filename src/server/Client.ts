@@ -113,11 +113,13 @@ export default class Client {
                 await this.session.voiceIntegration.start();
 
                 const voiceStates: {[key: string]: boolean} = {};
+                voiceStates[this.identity.socketId] = await this.session.voiceIntegration.getVoiceState(this.identity);
+
                 for (const player of this.session.players) {
                     voiceStates[player.identity.socketId] = await this.session.voiceIntegration.getVoiceState(player.identity);
                 }
 
-                this.socket.emit("voice:state", true);
+                this.socket.emit("voice:state", true, voiceStates);
             } catch (e) {
                 console.error(e);
 
