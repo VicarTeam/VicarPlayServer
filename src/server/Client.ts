@@ -71,5 +71,31 @@ export default class Client {
 
             this.session.removePlayer(client, true, true);
         });
+        this.socket.on("sync-char:request", (targetSocketId: string, savingChar: string) => {
+            if (!this.session || !this.session.isHost(this)) {
+                return;
+            }
+
+            const client = this.session.players.find(x => x.identity.socketId === targetSocketId);
+            if (!client) {
+                return;
+            }
+
+            client.socket.emit("sync-char:request", savingChar);
+        });
+        this.socket.on("sync-char:response", (savingChar: string, char: any) => {
+            if (!this.session || this.session.isHost(this)) {
+                return;
+            }
+
+            this.session.host.socket.emit("sync-char:response", this.identity.socketId, savingChar, char);
+        });
+        this.socket.on("sync-char:update", (char: any) => {
+            if (!this.session || this.session.isHost(this)) {
+                return;
+            }
+
+            this.session.host.socket.emit("sync-char:update", this.identity.socketId, char);
+        });
     }
 }
