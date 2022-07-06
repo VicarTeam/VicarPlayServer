@@ -68,7 +68,7 @@ export default class Session {
             id: this.id,
             name: this.name,
             host: this.host.identity,
-            chatHistory: this.chatHistory.filter(x => x.sender === client.identity || x.receiver === client.identity),
+            chatHistory: this.chatHistory.filter(x => x.sender === client.identity || x.receiver === client.identity || !x.receiver),
             players: this.players.map(x => x.identity)
         };
     }

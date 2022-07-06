@@ -1,6 +1,7 @@
 import Session from "./Session";
 import Client from "../server/Client";
 import {randomUUID} from "crypto";
+import {MessageType} from "../@types/chat";
 
 export default class SessionManager {
 
@@ -32,6 +33,11 @@ export default class SessionManager {
 
         session.players.push(player);
         session.updatePlayers("add", player.identity);
+        session.sendMessage({
+            type: MessageType.Status,
+            sender: player.identity,
+            content: "joined"
+        });
     }
 
     public destroySession(session: Session, tellMe: boolean = true) {
